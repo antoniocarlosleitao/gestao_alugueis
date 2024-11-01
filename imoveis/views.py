@@ -1,15 +1,14 @@
 import csv
-from http.client import responses
-from typing import Annotated
+import datetime
+from django.utils import timezone
 
-from django.contrib.admin.templatetags.admin_list import pagination
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
-from django.db.models import Q, Sum
-from sqlparse.sql import Values
+from django.db.models import Sum
 
 from imoveis.forms import ImovelForm, InquilinoForm, AluguelForm
 from imoveis.models import Imovel, Inquilino, Aluguel
@@ -18,6 +17,7 @@ from imoveis.models import Imovel, Inquilino, Aluguel
 # Página inicial
 def index(request):
     return render(request, 'imoveis/index.html')
+
 
 # Listagem de Imóveis
 def list_imoveis(request):
@@ -37,9 +37,10 @@ def list_imoveis(request):
     elif preco_min:
         query = query.filter(preco_aluguel__lte=preco_min)  # Less Than or Equal (Menor ou igual)
     elif preco_max:
-        query = query.filter(preco_aluguel__gte=preco_max)  # Greater THan or Equal (Maior ou igual)
+        query = query.filter(preco_aluguel__gte=preco_max)  # Greater Than or Equal (Maior ou igual)
 
     return render(request, 'imoveis/list_imoveis.html', {'imoveis': query})
+
 
 # Adicionar Inquilino
 @login_required
@@ -52,6 +53,7 @@ def adicionar_inquilino(request):
     else:
         form = InquilinoForm()
     return render(request, 'imoveis/form_inquilino.html', {'form': form, 'title': 'Adicionar Inquilino'})
+
 
 # Editar Inquilino
 @login_required
@@ -72,6 +74,7 @@ def list_inquilinos(request):
     inquilinos = Inquilino.objects.all()
     return render(request, 'imoveis/list_inquilinos.html', {'inquilinos': inquilinos})
 
+
 # Adicionar Imóvel
 @login_required
 def adicionar_imovel(request):
@@ -83,6 +86,7 @@ def adicionar_imovel(request):
     else:
         form = ImovelForm()
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Adicionar Imóvel'})
+
 
 # Editar Imóvel
 @login_required
@@ -96,6 +100,7 @@ def editar_imovel(request, imovel_id):
         form = ImovelForm(instance=imovel)
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Editar Imóvel'})
 
+
 # Excluir Imóvel
 @login_required
 def excluir_imovel(request, imovel_id):
@@ -104,6 +109,7 @@ def excluir_imovel(request, imovel_id):
         imovel.delete()
         return redirect('list_imoveis')
     return render(request, 'imoveis/excluir_imovel.html', {'imovel': imovel})
+
 
 # Login
 def user_login(request):
@@ -118,6 +124,7 @@ def user_login(request):
             return render(request, 'imoveis/login.html', {'error': 'Credenciais inválidas.'})
     return render(request, 'imoveis/login.html')
 
+
 # Logout
 def user_logout(request):
     logout(request)
@@ -127,15 +134,29 @@ def user_logout(request):
 @login_required
 def relatorio_pagamentos(request):
     alugueis = Aluguel.objects.all()
-
     total_recebido = alugueis.filter(pago=True).aggregate(Sum('valor'))['valor__sum'] or 0
     alugueis_pendentes = alugueis.filter(pago=False)
+
+    # Notificações de vencimento próximos
+    hoje = datetime.date.today()
+    vencimento_proximo = hoje + datetime.timedelta(days=7)
+    alugueis_a_vencer = alugueis.filter(pago=False, data_vencimento__gt=hoje, data_vencimento__lte=vencimento_proximo)
+    alugueis_vencidos = alugueis.filter(pago=False, data_vencimento__lt=hoje)
+
+    if alugueis_a_vencer.exists():
+        messages.info(request, f"{alugueis_a_vencer.count()} pagamento(s) esta(ão) próximo(s) do vencimento.")
+
+    if alugueis_vencidos.exists():
+        messages.error(request, f"{alugueis_vencidos.count()} pagamento(s) que esta(ão) vencimento(s).")
 
     return render(request, 'imoveis/relatorio_pagamentos.html', {
         'alugueis': alugueis,
         'total_recebido': total_recebido,
-        'alugueis_pendentes': alugueis_pendentes
+        'alugueis_pendentes': alugueis_pendentes,
+        'alugueis_a_vencer': alugueis_a_vencer,
+        'alugueis_vencidos': alugueis_vencidos
     })
+
 
 @login_required
 def exportar_relatorio_csv(request):
@@ -162,6 +183,7 @@ def exportar_relatorio_csv(request):
 
     return response
 
+
 @login_required
 def relatorio_avancado_json(request):
     """
@@ -170,10 +192,12 @@ def relatorio_avancado_json(request):
     alugueis = Aluguel.objects.filter(pago=True).values('data_vencimento').annotate(total=Sum('valor'))
     return JsonResponse(list(alugueis), safe=False)
 
+
 @login_required
 def listar_alugueis(request):
     alugueis = Aluguel.objects.all()
     return render(request, 'alugueis/listar_alugueis.html', {'alugueis': alugueis})
+
 
 @login_required
 def cadastrar_aluguel(request):
@@ -185,6 +209,7 @@ def cadastrar_aluguel(request):
     else:
         form = AluguelForm()
     return render(request, 'alugueis/form_aluguel.html', {'form': form, 'title': 'Cadastrar Aluguel'})
+
 
 @login_required
 def editar_aluguel(request, aluguel_id):
@@ -199,6 +224,7 @@ def editar_aluguel(request, aluguel_id):
         form = AluguelForm(instance=aluguel)
     return render(request, 'alugueis/form_aluguel.html', {'form': form, 'aluguel': aluguel, 'title': 'Editar Aluguel'})
 
+
 @login_required
 def excluir_aluguel(request, aluguel_id):
     aluguel = get_object_or_404(Aluguel, id=aluguel_id)
@@ -208,3 +234,16 @@ def excluir_aluguel(request, aluguel_id):
         return redirect('listar_alugueis')
 
     return render(request, 'alugueis/excluir_aluguel.html', {'aluguel': aluguel})
+
+
+@login_required
+def marcar_como_pago(request, aluguel_id):
+    aluguel = get_object_or_404(Aluguel, id=aluguel_id)
+
+    if not aluguel.pago:
+        aluguel.pago = True
+        aluguel.data_vencimento += timezone.timedelta(days=30)
+        aluguel.save()
+        messages.success(request, "Pagamento registrado com sucesso.")
+
+    return redirect('listar_alugueis')
