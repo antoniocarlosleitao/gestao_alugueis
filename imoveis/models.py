@@ -1,9 +1,10 @@
 from django.db import models
 
-
 # Modelo para Imóveis
 class Imovel(models.Model):
+    cep = models.CharField(max_length=10, default="01001-001")
     endereco = models.CharField(max_length=255)
+    bairro = models.CharField(max_length=100, default='')
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
     preco_aluguel = models.DecimalField(max_digits=8, decimal_places=2)
@@ -11,7 +12,6 @@ class Imovel(models.Model):
 
     def __str__(self):
         return f"{self.endereco} - {self.cidade}/{self.estado}"
-
 
 # Modelo para Inquilinos
 class Inquilino(models.Model):
@@ -22,7 +22,6 @@ class Inquilino(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.imovel.endereco}"
-
 
 # Modelo para Aluguéis
 class Aluguel(models.Model):

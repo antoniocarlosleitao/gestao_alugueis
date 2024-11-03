@@ -1,5 +1,7 @@
 import csv
 import datetime
+
+from django.conf import settings
 from django.utils import timezone
 
 from django.contrib.auth import authenticate, login, logout
@@ -12,12 +14,78 @@ from django.db.models import Sum
 
 from imoveis.forms import ImovelForm, InquilinoForm, AluguelForm
 from imoveis.models import Imovel, Inquilino, Aluguel
+from imoveis.services.geocode import get_coordinates_from_address
+from imoveis.services.search_address_by_cep import buscar_endereco_por_cep
 
 
 # Página inicial
 def index(request):
-    return render(request, 'imoveis/index.html')
+    return render(request, 'index.html')
 
+# Adicionar Inquilino
+@login_required
+def adicionar_inquilino(request):
+    if request.method == 'POST':
+        form = InquilinoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('list_inquilinos')
+    else:
+        form = InquilinoForm()
+    return render(request, 'inquilinos/form_inquilino.html', {'form': form, 'title': 'Adicionar Inquilino'})
+
+# Editar Inquilino
+@login_required
+def editar_inquilino(request, inquilino_id):
+    inquilino = get_object_or_404(Inquilino, id=inquilino_id)
+    if request.method == 'POST':
+        form = InquilinoForm(request.POST, instance=inquilino)
+        form.save()
+        return redirect('list_inquilinos')
+    else:
+        form = InquilinoForm(instance=inquilino)
+    return render(request, 'inquilinos/form_inquilino.html', {'form': form, 'title': 'Editar Inquilino'})
+
+
+# Listagem de Inquilinos
+@login_required
+def list_inquilinos(request):
+    inquilinos = Inquilino.objects.all()
+    return render(request, 'inquilinos/list_inquilinos.html', {'inquilinos': inquilinos})
+
+# Buscar CEP
+@login_required
+def buscar_endereco(request):
+    cep = request.GET.get('cep')
+    if not cep:
+        return JsonResponse({'erro': 'CEP não fornecido.'}, status=400)
+
+    try:
+        dados = buscar_endereco_por_cep(cep)
+
+        print(f"endereco ========>>>>>>>>> {dados}")
+        return JsonResponse({
+            'endereco': dados['logradouro'],
+            'bairro': dados['bairro'],
+            'cidade': dados['localidade'],
+            'estado': dados['uf'],
+            'cep': dados['cep'],
+        })
+    except Exception as e:
+        return JsonResponse({'erro': f'Erro: {str(e)}'}, status=500)
+
+@login_required
+def detalhar_imovel(request, imovel_id):
+    imovel = get_object_or_404(Imovel, id=imovel_id)
+
+    latitude, longitude, display_name = get_coordinates_from_address(cep=imovel.cep)
+
+    return render(request, 'imoveis/detalhar_imovel.html', {
+        'imovel': imovel,
+        'latitude': latitude,
+        'longitude': longitude,
+        'display_name': display_name
+    })
 
 # Listagem de Imóveis
 def list_imoveis(request):
@@ -41,40 +109,6 @@ def list_imoveis(request):
 
     return render(request, 'imoveis/list_imoveis.html', {'imoveis': query})
 
-
-# Adicionar Inquilino
-@login_required
-def adicionar_inquilino(request):
-    if request.method == 'POST':
-        form = InquilinoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('list_inquilinos')
-    else:
-        form = InquilinoForm()
-    return render(request, 'imoveis/form_inquilino.html', {'form': form, 'title': 'Adicionar Inquilino'})
-
-
-# Editar Inquilino
-@login_required
-def editar_inquilino(request, inquilino_id):
-    inquilino = get_object_or_404(Inquilino, id=inquilino_id)
-    if request.method == 'POST':
-        form = InquilinoForm(request.POST, instance=inquilino)
-        form.save()
-        return redirect('list_inquilinos')
-    else:
-        form = InquilinoForm(instance=inquilino)
-    return render(request, 'imoveis/form_inquilino.html', {'form': form, 'title': 'Editar Inquilino'})
-
-
-# Listagem de Inquilinos
-@login_required
-def list_inquilinos(request):
-    inquilinos = Inquilino.objects.all()
-    return render(request, 'imoveis/list_inquilinos.html', {'inquilinos': inquilinos})
-
-
 # Adicionar Imóvel
 @login_required
 def adicionar_imovel(request):
@@ -86,7 +120,6 @@ def adicionar_imovel(request):
     else:
         form = ImovelForm()
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Adicionar Imóvel'})
-
 
 # Editar Imóvel
 @login_required
@@ -100,7 +133,6 @@ def editar_imovel(request, imovel_id):
         form = ImovelForm(instance=imovel)
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Editar Imóvel'})
 
-
 # Excluir Imóvel
 @login_required
 def excluir_imovel(request, imovel_id):
@@ -109,7 +141,6 @@ def excluir_imovel(request, imovel_id):
         imovel.delete()
         return redirect('list_imoveis')
     return render(request, 'imoveis/excluir_imovel.html', {'imovel': imovel})
-
 
 # Login
 def user_login(request):
@@ -121,9 +152,8 @@ def user_login(request):
             login(request, user)
             return HttpResponseRedirect(reverse('index'))
         else:
-            return render(request, 'imoveis/login.html', {'error': 'Credenciais inválidas.'})
-    return render(request, 'imoveis/login.html')
-
+            return render(request, 'login.html', {'error': 'Credenciais inválidas.'})
+    return render(request, 'login.html')
 
 # Logout
 def user_logout(request):
@@ -149,14 +179,13 @@ def relatorio_pagamentos(request):
     if alugueis_vencidos.exists():
         messages.error(request, f"{alugueis_vencidos.count()} pagamento(s) que esta(ão) vencimento(s).")
 
-    return render(request, 'imoveis/relatorio_pagamentos.html', {
+    return render(request, 'relatorios/relatorio_pagamentos.html', {
         'alugueis': alugueis,
         'total_recebido': total_recebido,
         'alugueis_pendentes': alugueis_pendentes,
         'alugueis_a_vencer': alugueis_a_vencer,
         'alugueis_vencidos': alugueis_vencidos
     })
-
 
 @login_required
 def exportar_relatorio_csv(request):
@@ -183,7 +212,6 @@ def exportar_relatorio_csv(request):
 
     return response
 
-
 @login_required
 def relatorio_avancado_json(request):
     """
@@ -192,12 +220,10 @@ def relatorio_avancado_json(request):
     alugueis = Aluguel.objects.filter(pago=True).values('data_vencimento').annotate(total=Sum('valor'))
     return JsonResponse(list(alugueis), safe=False)
 
-
 @login_required
 def listar_alugueis(request):
     alugueis = Aluguel.objects.all()
     return render(request, 'alugueis/listar_alugueis.html', {'alugueis': alugueis})
-
 
 @login_required
 def cadastrar_aluguel(request):
@@ -209,7 +235,6 @@ def cadastrar_aluguel(request):
     else:
         form = AluguelForm()
     return render(request, 'alugueis/form_aluguel.html', {'form': form, 'title': 'Cadastrar Aluguel'})
-
 
 @login_required
 def editar_aluguel(request, aluguel_id):
@@ -224,7 +249,6 @@ def editar_aluguel(request, aluguel_id):
         form = AluguelForm(instance=aluguel)
     return render(request, 'alugueis/form_aluguel.html', {'form': form, 'aluguel': aluguel, 'title': 'Editar Aluguel'})
 
-
 @login_required
 def excluir_aluguel(request, aluguel_id):
     aluguel = get_object_or_404(Aluguel, id=aluguel_id)
@@ -235,14 +259,25 @@ def excluir_aluguel(request, aluguel_id):
 
     return render(request, 'alugueis/excluir_aluguel.html', {'aluguel': aluguel})
 
-
 @login_required
 def marcar_como_pago(request, aluguel_id):
     aluguel = get_object_or_404(Aluguel, id=aluguel_id)
 
     if not aluguel.pago:
         aluguel.pago = True
+
+        # Solução para somar 30 dias corridos
         aluguel.data_vencimento += timezone.timedelta(days=30)
+
+        # Solução para dia fixo de pagamento
+        # data_vencimento = aluguel.data_vencimento
+        # if data_vencimento.month == 12: # Se for dezembro, o próximo mês é janeiro do próximo ano
+        #    nova_data_vencimento = data_vencimento.replace(year=data_vencimento.year + 1, month=1)
+        # else:
+        #    nova_data_vencimento = data_vencimento.replace(month=data_vencimento.month + 1)
+
+        # aluguel.data_vencimento = nova_data_vencimento
+
         aluguel.save()
         messages.success(request, "Pagamento registrado com sucesso.")
 

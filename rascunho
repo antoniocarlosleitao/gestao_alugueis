@@ -26,6 +26,8 @@
         |- imoveis/
             |- css/
                 |- style.css            # Arquivo CSS customizado
+    |- templatetags/
+        |- custom_filters.py            # Arquivo de filtros customizados
     |
     |- admin.py                 # Configurações da administração do Django
     |- apps.py                  # Configurações da aplicação
@@ -38,7 +40,6 @@
 |- db.sqlite3                   # Banco de dados SQLite
 |- manage.py                    # Script de gestão do Django
 
-
 Estrutura do Projeto
 O projeto está organizado com as seguintes funcionalidades principais:
 
@@ -46,24 +47,31 @@ O projeto está organizado com as seguintes funcionalidades principais:
     - Adição com validação do preço do aluguel, edição e exclusão de imóveis.
     - Listagem de imóveis, com filtro por cidade, estado e faixa de preço.
     - Associação ao modelo de inquilino por uma relação ForeinKey.
-    
+    - Integração com viacep para consulta nos correios.
+    - Integração com Maps
+
 2 . Inquilinos:
     - Adição com validação de email, edição, listagem e exclusão de inquilinos.
     - Associação a um imóvel específico.
-    
+
 3. Relatório de Pagamentos:
     - Relatório de pagamentos efetuados e pendentes.
     - Cálculo do total recebido considerando apenas aluguéis pagos.
     - A listagem de aluguéis pendentes.
     - Modal com gráfico de pagamentos
     - Export do relatório de alugueis
-    
+    - Notificação de pagamentos pendentes nos próximos 7 dias e pagamentos vencidos
+
 4. Autenticação e Autorização:
     - Sistema de login e logout
     - Páginas protegidas(@login_required) para evitar o acesso não autorizado.
     - Usuários logados têm acesso à listagem de inquilinos e relatórios.
     - Somente usuários autenticados podem ver e interagir com os botões de edição e exclusão.
-    
+
+5 . Aluguel:
+    - Adição, edição, listagem e exclusão de alugueis.
+    - Marcação de aluguel pago com atualização de vencimento para 30 dias
+
 Estrura do projeto (arquivos)
 
 1. Models
@@ -82,11 +90,11 @@ Estrura do projeto (arquivos)
     - user_login
     - user_logout
     - relatorio_pagamentos
-    
+
 3. Forms
     - ImovelForm
     - InquilinoForm
- 
+
 4. Templates
     -base.html
     -excluir_imovel.html
@@ -101,20 +109,46 @@ Estrura do projeto (arquivos)
 5. Configurações
     - Configurações de banco de dados, autenticação e segurança.
     - Integração com Boostrap e configurações de middleware para suporte a autenticação.
-    
+
 Bibliotecas Usadas
     - Django
     - Django ORM
     - Boostrap
 
 Próximos passos:
-1. Criar CRUD de aluguéis - Create Retrieve Update Delete 
-2. Notificação de Vencimento
+1. Notificação de Vencimento (e-mail)
     - Próximo da data
     - Aluguel vencido
     - Notificação de pagamento recebido
-3. Painel Administrativo
+2. Colocar retry no carregamento do mapa
+3. Upload de fotos do imovel
+4. Vitrine de fotos do imovel
+5. Ajustar o relacionamento Inquilino x Imovel x Aluguel
+6. Mudar para o PostgreSQL usando o Supabase
+7. Painel Administrativo
     - Criar uma dashboard métricas de pagamento
-4. Teste e Documentação:
+8. Teste e Documentação:
     - Escrever testes unitários
     - Documentar o projeto e suas funcionalidades
+9. Publicar o projeto na nuvem
+
+Próximos passos (opcional):
+- o valor do imovel + 10% + encargos
+- logomarca da imobiliaria
+- autenticação com rede social
+
+
+Atualizar a consulta de CEP para o https://www.gov.br/
+- solicitar o token
+- guardar o token em memoria
+- validar o expired time do token
+- consulta
+
+
+git init                      # criar o repositorio
+git clone                     # copiar/clonar um repositorio
+
+git add <nome_do_arquivo>     # adicionar um arquivo para ser commitado
+git commit                    # commitar(persistir) a versão do(s) arquivo(s)
+git push                      # envia o commit para o repositorio remoto
+git pull                      # trazer uma atualização do repositorio remoto
