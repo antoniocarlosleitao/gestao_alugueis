@@ -1,4 +1,4 @@
-﻿﻿gestao_alugueis/
+﻿gestao_alugueis/
 |
 |- gestao_alugueis/             # Diretório do projeto principal
     |- __init__.py              # Definir diretório como modulo
@@ -120,6 +120,7 @@ Próximos passos:
     - Próximo da data
     - Aluguel vencido
     - Notificação de pagamento recebido
+    - Envio de mensagem para saber sobre o imóvel
 2. Colocar retry no carregamento do mapa
 3. Upload de fotos do imovel
 4. Vitrine de fotos do imovel
@@ -145,6 +146,19 @@ Atualizar a consulta de CEP para o https://www.gov.br/
 - consulta
 
 
+<TIPO_IMOVEL>-<5_DIGITOS>
+CAS-12345: Casa
+APT-54321: Apartamento
+LOJ-11223: Loja
+SAL-74125: Sala
+TER-96352: Terreno
+
+
+
+
+
+
+
 git init                      # criar o repositorio
 git clone                     # copiar/clonar um repositorio
 
@@ -152,3 +166,10 @@ git add <nome_do_arquivo>     # adicionar um arquivo para ser commitado
 git commit                    # commitar(persistir) a versão do(s) arquivo(s)
 git push                      # envia o commit para o repositorio remoto
 git pull                      # trazer uma atualização do repositorio remoto
+
+Google Minha Conta Security
+Senha app: alugueis
+tpeo eurp gwbd tfrk
+
+https://myaccount.google.com/security
+https://docs.djangoproject.com/en/5.1/topics/email/

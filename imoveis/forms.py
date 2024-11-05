@@ -1,19 +1,23 @@
-from django import forms
+﻿from django import forms
 from imoveis.models import Imovel, Inquilino, Aluguel
 
 
 class ImovelForm(forms.ModelForm):
     class Meta:
         model = Imovel
-        fields = ['cep', 'endereco', 'bairro', 'cidade', 'estado', 'preco_aluguel', 'descricao']
+        fields = ['tipo_imovel', 'cep', 'endereco', 'bairro', 'cidade', 'estado', 'preco_aluguel', 'descricao']
         widgets = {
+            'tipo_imovel': forms.Select(attrs={'class': 'form-control'}),
             'cep': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite o CEP'}),
             'endereco': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite o endereço'}),
             'bairro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite o bairro'}),
             'cidade': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite a cidade'}),
             'estado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Digite o estado'}),
-            'preco_aluguel': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Digite o preço do aluguel'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Digite uma descrição do imóvel (opcional)', 'rows': 3, 'maxlength': 150}),
+            'preco_aluguel': forms.NumberInput(
+                attrs={'class': 'form-control', 'placeholder': 'Digite o preço do aluguel'}),
+            'descricao': forms.Textarea(
+                attrs={'class': 'form-control', 'placeholder': 'Digite uma descrição do imóvel (opcional)', 'rows': 3,
+                       'maxlength': 150}),
         }
 
     def clean_preco_aluguel(self):
@@ -21,6 +25,7 @@ class ImovelForm(forms.ModelForm):
         if preco_aluguel <= 0:
             raise forms.ValidationError("O preço de aluguel deve ser um valor positivo.")
         return preco_aluguel
+
 
 class InquilinoForm(forms.ModelForm):
     class Meta:
@@ -38,6 +43,7 @@ class InquilinoForm(forms.ModelForm):
         if not email:
             raise forms.ValidationError("O campo email é obrigatório.")
         return email
+
 
 class AluguelForm(forms.ModelForm):
     class Meta:
