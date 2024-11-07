@@ -1,4 +1,4 @@
-﻿gestao_alugueis/
+﻿﻿gestao_alugueis/
 |
 |- gestao_alugueis/             # Diretório do projeto principal
     |- __init__.py              # Definir diretório como modulo
@@ -48,7 +48,7 @@ O projeto está organizado com as seguintes funcionalidades principais:
     - Listagem de imóveis, com filtro por cidade, estado e faixa de preço.
     - Associação ao modelo de inquilino por uma relação ForeinKey.
     - Integração com viacep para consulta nos correios.
-    - Integração com Maps
+    - Integração com Maps usando tratamento de retry no carregamento do mapa
 
 2 . Inquilinos:
     - Adição com validação de email, edição, listagem e exclusão de inquilinos.
@@ -119,9 +119,6 @@ Próximos passos:
 1. Notificação de Vencimento (e-mail)
     - Próximo da data
     - Aluguel vencido
-    - Notificação de pagamento recebido
-    - Envio de mensagem para saber sobre o imóvel
-2. Colocar retry no carregamento do mapa
 3. Upload de fotos do imovel
 4. Vitrine de fotos do imovel
 5. Ajustar o relacionamento Inquilino x Imovel x Aluguel
@@ -144,6 +141,49 @@ Atualizar a consulta de CEP para o https://www.gov.br/
 - guardar o token em memoria
 - validar o expired time do token
 - consulta
+
+
+git init                      # criar o repositorio
+git clone                     # copiar/clonar um repositorio
+
+git add <nome_do_arquivo>     # adicionar um arquivo para ser commitado
+git commit                    # commitar(persistir) a versão do(s) arquivo(s)
+git push                      # envia o commit para o repositorio remoto
+git pull                      # trazer uma atualização do repositorio remoto
+
+
+<TIPO_IMOVEL>-<5_DIGITOS>
+CAS-12345: Casa
+APT-54321: Apartamento
+LOJ-11223: Loja
+SAL-74125: Sala
+TER-96352: Terreno
+
+
+pip install django-crontab
+python manage.py crontab add
+python manage.py runcrons # opcional: execução de forma manual
+
+pip uninstall django-crontab
+
+pip install celery
+pip install django-celery-beat
+pip install django-celery-results
+pip install redis
+
+python manage.py migrate
+python manage.py migrate django_celery_results
+
+-- iniciar o projeto SEMPRE
+python manage.py runserver
+celery -A gestao_alugueis worker -l info -P solo
+celery -A gestao_alugueis beat -l info
+
+celery -A gestao_alugueis worker -l DEBUG
+celery -A gestao_alugueis beat -l DEBUG
+
+celery -A gestao_alugueis beat --loglevel=info
+celery -A gestao_alugueis worker --loglevel=info
 
 
 <TIPO_IMOVEL>-<5_DIGITOS>
