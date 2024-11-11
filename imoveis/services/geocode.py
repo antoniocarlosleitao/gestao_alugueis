@@ -9,7 +9,7 @@ def get_coordinates_from_address(cep):
         'format': 'jsonv2'
     }
     headers = {
-        'User-Agent': 'Alugueis/1.0 (luis@senac.com.br)'
+        'User-Agent': 'Alugueis/1.0 (antoniocarlosdasilvaleitao4@gmail.com.br)'
     }
     max_retries = 3
     delay = 2
