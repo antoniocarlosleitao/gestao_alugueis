@@ -23,7 +23,7 @@ from imoveis.tasks import verificar_vencimento_aluguel
 
 # Página inicial
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'imoveis/index.html')
 
 # Adicionar Inquilino
 @login_required
