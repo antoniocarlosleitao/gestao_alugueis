@@ -16,3 +16,4 @@ def buscar_endereco_por_cep(cep):
             return {"erro": "Erro ao consultar o CEP."}
     except Exception as e:
         return {"erro": f"Erro: {str(e)}"}
+

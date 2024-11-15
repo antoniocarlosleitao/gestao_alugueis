@@ -4,15 +4,15 @@
 
 {% block content %}
 <h1 class="mb-4">{{ title }}</h1>
-<form method="post" class="row g-3">
+<form method="post" class="row g-3" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <div class="col-md-4">
+    <div class="col-md-2">
         {{ form.tipo_imovel.label_tag }}
         {{ form.tipo_imovel }}
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-2">
         {{ form.cep.label_tag }}
         {{ form.cep }}
     </div>
@@ -40,6 +40,12 @@
     <div class="col-12">
         {{ form.descricao.label_tag }}
         {{ form.descricao }}
+    </div>
+
+    <div class="col-12">
+        <label for="imagens" class="form-label">Fotos do Imóvel(máximo de 5 fotos)</label>
+        <input type="file" id="imagens" name="imagens" accept="image/*" multiple class="form-control" onchange="validateFileCount()">
+        <small class="text-muted">Você pode selecionar até 5 imagens.</small>
     </div>
 
     {% if form.errors %}
@@ -83,5 +89,14 @@
                     });
             }
         });
+    </script>
+    <script>
+        function validateFileCount() {
+            const input = document.getElementById('imagens');
+            if(input.files.length > 5) {
+                alert("Você pode fazer upload de no máximo 5 imagens.");
+                input.value = '';
+            }
+        }
     </script>
 {% endblock %}
