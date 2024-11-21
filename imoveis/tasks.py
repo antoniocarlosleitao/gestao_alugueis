@@ -48,7 +48,7 @@ def envia_email_notificacao(aluguel, tipo):
         assunto = f'Lembrete: Seu aluguel vence em breve'
         template_content = 'email/proximo_vencimento.html'
     else:
-        assunto = 'Aviso: Seu aluguel está vencido!'
+        assunto = 'Aviso: Sua inscrição expirou!'
         template_content = 'email/aluguel_vencido.html'
 
     mensagem_html = render_to_string(template_content, {

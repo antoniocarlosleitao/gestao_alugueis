@@ -18,11 +18,9 @@ from imoveis.models import Imovel, Inquilino, Aluguel, ImagemImovel
 from imoveis.services.geocode import get_coordinates_from_address
 from imoveis.services.search_address_by_cep import buscar_endereco_por_cep
 
-
 # Página inicial
 def index(request):
     return render(request, 'index.html')
-
 
 # Adicionar Inquilino
 @login_required
@@ -35,7 +33,6 @@ def adicionar_inquilino(request):
     else:
         form = InquilinoForm()
     return render(request, 'inquilinos/form_inquilino.html', {'form': form, 'title': 'Adicionar Inquilino'})
-
 
 # Editar Inquilino
 @login_required
@@ -50,13 +47,11 @@ def editar_inquilino(request, inquilino_id):
         form = InquilinoForm(instance=inquilino)
     return render(request, 'inquilinos/form_inquilino.html', {'form': form, 'title': 'Editar Inquilino'})
 
-
 # Listagem de Inquilinos
 @login_required
 def list_inquilinos(request):
     inquilinos = Inquilino.objects.all()
     return render(request, 'inquilinos/list_inquilinos.html', {'inquilinos': inquilinos})
-
 
 # Excluir Inquilino
 @login_required
@@ -66,7 +61,6 @@ def excluir_inquilino(request, inquilino_id):
         inquilino.delete()
         return redirect('list_inquilinos')
     return render(request, 'inquilinos/excluir_inquilino.html', {'inquilino': inquilino})
-
 
 # Buscar CEP
 @login_required
@@ -87,7 +81,6 @@ def buscar_endereco(request):
     except Exception as e:
         return JsonResponse({'erro': f'Erro: {str(e)}'}, status=500)
 
-
 def detalhar_imovel(request, imovel_id):
     imovel = get_object_or_404(Imovel, id=imovel_id)
     imagens = imovel.imagens.all()
@@ -104,7 +97,6 @@ def detalhar_imovel(request, imovel_id):
         'display_name': display_name
     })
 
-
 # Vitrine de Imóveis
 def vitrine_imoveis(request):
     # Filtra os imóveis que não possuem inquilinos (imóveis disponíveis)
@@ -117,7 +109,6 @@ def vitrine_imoveis(request):
         imovel.imagem_destaque = imagem_destaque  # Adiciona dinamicamente o atributo para facilitar o uso no template
 
     return render(request, 'imoveis/vitrine.html', {'imoveis': imoveis_disponiveis})
-
 
 # Listagem de Imóveis
 def list_imoveis(request):
@@ -141,7 +132,6 @@ def list_imoveis(request):
 
     return render(request, 'imoveis/list_imoveis.html', {'imoveis': query})
 
-
 # Adicionar Imóvel
 @login_required
 def adicionar_imovel(request):
@@ -159,7 +149,6 @@ def adicionar_imovel(request):
     else:
         form = ImovelForm()
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Adicionar Imóvel'})
-
 
 # Editar Imóvel
 @login_required
@@ -179,7 +168,6 @@ def editar_imovel(request, imovel_id):
         form = ImovelForm(instance=imovel)
     return render(request, 'imoveis/form_imovel.html', {'form': form, 'title': 'Editar Imóvel'})
 
-
 # Excluir Imóvel
 @login_required
 def excluir_imovel(request, imovel_id):
@@ -189,7 +177,6 @@ def excluir_imovel(request, imovel_id):
         return redirect('list_imoveis')
     return render(request, 'imoveis/excluir_imovel.html', {'imovel': imovel})
 
-
 @login_required
 def preco_imovel(request, imovel_id):
     try:
@@ -197,7 +184,6 @@ def preco_imovel(request, imovel_id):
         return JsonResponse({'preco_aluguel': str(imovel.preco_aluguel)})
     except Imovel.DoesNotExist:
         return JsonResponse({'error': 'Imóvel não encontrado'}, status=404)
-
 
 # Login
 def user_login(request):
@@ -212,12 +198,10 @@ def user_login(request):
             return render(request, 'login.html', {'error': 'Credenciais inválidas.'})
     return render(request, 'login.html')
 
-
 # Logout
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
-
 
 @login_required
 def relatorio_pagamentos(request):
@@ -245,7 +229,6 @@ def relatorio_pagamentos(request):
         'alugueis_vencidos': alugueis_vencidos
     })
 
-
 @login_required
 def exportar_relatorio_csv(request):
     # Cria a responsa do tipo CSV
@@ -271,7 +254,6 @@ def exportar_relatorio_csv(request):
 
     return response
 
-
 @login_required
 def relatorio_avancado_json(request):
     """
@@ -280,12 +262,10 @@ def relatorio_avancado_json(request):
     alugueis = Aluguel.objects.filter(pago=True).values('data_vencimento').annotate(total=Sum('valor'))
     return JsonResponse(list(alugueis), safe=False)
 
-
 @login_required
 def listar_alugueis(request):
     alugueis = Aluguel.objects.all()
     return render(request, 'alugueis/listar_alugueis.html', {'alugueis': alugueis})
-
 
 @login_required
 def adicionar_aluguel(request):
@@ -297,7 +277,6 @@ def adicionar_aluguel(request):
     else:
         form = AluguelForm()
     return render(request, 'alugueis/form_aluguel.html', {'form': form, 'title': 'Cadastrar Aluguel'})
-
 
 @login_required
 def editar_aluguel(request, aluguel_id):
@@ -324,7 +303,6 @@ def editar_aluguel(request, aluguel_id):
         'title': 'Editar Aluguel'
     })
 
-
 @login_required
 def excluir_aluguel(request, aluguel_id):
     aluguel = get_object_or_404(Aluguel, id=aluguel_id)
@@ -334,7 +312,6 @@ def excluir_aluguel(request, aluguel_id):
         return redirect('listar_alugueis')
 
     return render(request, 'alugueis/excluir_aluguel.html', {'aluguel': aluguel})
-
 
 @login_required
 def marcar_como_pago(request, aluguel_id):
@@ -370,7 +347,6 @@ def marcar_como_pago(request, aluguel_id):
 
     return redirect('listar_alugueis')
 
-
 def contato_imovel(request):
     try:
         if request.method == 'POST':
@@ -379,7 +355,7 @@ def contato_imovel(request):
             telefone = request.POST.get('telefone')
             mensagem = request.POST.get('mensagem')
             identificador = request.POST.get('identificador')
-            assunto = f'Interesse sobre no Imóvel - {identificador}'
+            assunto = f'Interesse sobre o Imóvel - {identificador}'
             ano_atual = datetime.datetime.now().year
 
             mensagem_html = render_to_string('email/contato_imovel.html', {
@@ -398,7 +374,6 @@ def contato_imovel(request):
             return redirect('detalhar_imovel', imovel_id=request.POST.get('imovel_id'))
     except Exception as e:
         print(f"Ocorreu um erro ao tentar enviar o email. Erro: {e}")
-
 
 def envia_email(email, assunto, mensagem_html):
     plain_message = strip_tags(mensagem_html)
