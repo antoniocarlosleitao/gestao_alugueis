@@ -36,7 +36,7 @@ class Imovel(models.Model):
     def __str__(self):
         return f"{self.identificador}"
 
-# Modelo para as imagens do imovel
+# Modelo para as imagens do evento
 class ImagemImovel(models.Model):
     imovel = models.ForeignKey(Imovel, related_name='imagens', on_delete=models.CASCADE)
     imagem = models.ImageField(upload_to='imoveis/')
